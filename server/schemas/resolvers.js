@@ -29,7 +29,7 @@ const resolvers = {
       const params = username ? { username } : {};
       return Description.find(params).sort({ createdAt: -1 });
     },
-    thought: async (parent, { _id }) => {
+    description: async (parent, { _id }) => {
       return Description.findOne({ _id });
     }
   },
@@ -57,43 +57,17 @@ const resolvers = {
       const token = signToken(user);
       return { token, user };
     },
-    addThought: async (parent, args, context) => {
+    addDescription: async (parent, args, context) => {
       if (context.user) {
-        const thought = await Description.create({ ...args, username: context.user.username });
+        const description = await Description.create({ ...args, username: context.user.username });
 
         await User.findByIdAndUpdate(
           { _id: context.user._id },
-          { $push: { descriptions: thought._id } },
+          { $push: { descriptions: description._id } },
           { new: true }
         );
 
-        return thought;
-      }
-
-      throw new AuthenticationError('You need to be logged in!');
-    },
-    addReaction: async (parent, { thoughtId, reactionBody }, context) => {
-      if (context.user) {
-        const updatedThought = await Description.findOneAndUpdate(
-          { _id: thoughtId },
-          { $push: { reactions: { reactionBody, username: context.user.username } } },
-          { new: true, runValidators: true }
-        );
-
-        return updatedThought;
-      }
-
-      throw new AuthenticationError('You need to be logged in!');
-    },
-    addFriend: async (parent, { friendId }, context) => {
-      if (context.user) {
-        const updatedUser = await User.findOneAndUpdate(
-          { _id: context.user._id },
-          { $addToSet: { friends: friendId } },
-          { new: true }
-        ).populate('friends');
-
-        return updatedUser;
+        return description;
       }
 
       throw new AuthenticationError('You need to be logged in!');
